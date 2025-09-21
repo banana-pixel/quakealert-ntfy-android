@@ -27,13 +27,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.viewpager2.widget.ViewPager2
 import androidx.work.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.navigation.NavigationBarView
 import io.heckel.ntfy.BuildConfig
 import io.heckel.ntfy.R
 import io.heckel.ntfy.app.Application
@@ -46,19 +43,12 @@ import io.heckel.ntfy.msg.DownloadType
 import io.heckel.ntfy.msg.NotificationDispatcher
 import io.heckel.ntfy.service.SubscriberService
 import io.heckel.ntfy.service.SubscriberServiceManager
-import io.heckel.ntfy.ui.history.EarthquakeReport
-import io.heckel.ntfy.ui.history.QuakeHistoryAdapter
 import io.heckel.ntfy.util.*
 import io.heckel.ntfy.work.DeleteWorker
 import io.heckel.ntfy.work.PollWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -77,31 +67,12 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
     private lateinit var mainListContainer: SwipeRefreshLayout
     private lateinit var adapter: MainAdapter
     private lateinit var fab: FloatingActionButton
-    private lateinit var viewPager: ViewPager2
-    private lateinit var navigationBar: NavigationBarView
-    private lateinit var pagerAdapter: MainPagerAdapter
-    private var alertsPageView: View? = null
-    private var historyAdapter: QuakeHistoryAdapter? = null
-    private var historySwipeRefresh: SwipeRefreshLayout? = null
-    private var historyLoadingView: View? = null
-    private var historyStatusText: TextView? = null
-    private var alertsPageInitialized = false
-    private var historyInitialized = false
-    private var isLoadingHistory = false
 
     // Other stuff
     private var actionMode: ActionMode? = null
     private var workManager: WorkManager? = null // Context-dependent
     private var dispatcher: NotificationDispatcher? = null // Context-dependent
     private var appBaseUrl: String? = null // Context-dependent
-    private val historyClient by lazy {
-        OkHttpClient.Builder()
-            .callTimeout(15, TimeUnit.SECONDS)
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .build()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,48 +89,51 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
         // Action bar
         title = getString(R.string.main_action_bar_title)
 
-        viewPager = findViewById(R.id.main_view_pager)
-        navigationBar = findViewById(R.id.main_bottom_navigation)
-        pagerAdapter = MainPagerAdapter(
-            layoutInflater,
-            listOf(R.layout.main_page_quake_alerts, R.layout.main_page_quake_history)
-        ) { position, view ->
-            when (position) {
-                0 -> initializeAlertsPage(view)
-                1 -> initializeHistoryPage(view)
+        // Floating action button ("+")
+        fab = findViewById(R.id.fab)
+        fab.hide()
+        fab.isEnabled = false
+        fab.isClickable = false
+        fab.visibility = View.GONE
+
+        // Swipe to refresh
+        mainListContainer = findViewById(R.id.main_subscriptions_list_container)
+        mainListContainer.setOnRefreshListener { refreshAllSubscriptions() }
+        mainListContainer.setColorSchemeResources(Colors.refreshProgressIndicator)
+
+        // Update main list based on viewModel (& its datasource/livedata)
+        val noEntries: View = findViewById(R.id.main_no_subscriptions)
+        val onSubscriptionClick = { s: Subscription -> onSubscriptionItemClick(s) }
+        val onSubscriptionLongClick = { s: Subscription -> onSubscriptionItemLongClick(s) }
+
+        mainList = findViewById(R.id.main_subscriptions_list)
+        adapter = MainAdapter(repository, onSubscriptionClick, onSubscriptionLongClick)
+        mainList.adapter = adapter
+
+        viewModel.list().observe(this) {
+            it?.let { subscriptions ->
+                // Update main list
+                adapter.submitList(subscriptions as MutableList<Subscription>)
+                if (it.isEmpty()) {
+                    mainListContainer.visibility = View.GONE
+                    noEntries.visibility = View.VISIBLE
+                } else {
+                    mainListContainer.visibility = View.VISIBLE
+                    noEntries.visibility = View.GONE
+                }
+
+                // Add scrub terms to log (in case it gets exported)
+                subscriptions.forEach { s ->
+                    Log.addScrubTerm(shortUrl(s.baseUrl), Log.TermType.Domain)
+                    Log.addScrubTerm(s.topic)
+                }
+
+                // Update battery banner + WebSocket banner + websocket reconnect banner
+                showHideBatteryBanner(subscriptions)
+                showHideWebSocketBanner(subscriptions)
+                showHideWebSocketReconnectBanner(subscriptions)
             }
         }
-        viewPager.adapter = pagerAdapter
-        viewPager.offscreenPageLimit = pagerAdapter.itemCount
-
-        navigationBar.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_alerts -> {
-                    viewPager.setCurrentItem(0, true)
-                    true
-                }
-                R.id.nav_history -> {
-                    viewPager.setCurrentItem(1, true)
-                    maybeLoadHistory()
-                    true
-                }
-                else -> false
-            }
-        }
-        navigationBar.selectedItemId = R.id.nav_alerts
-
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                val menuItem = navigationBar.menu.getItem(position)
-                if (!menuItem.isChecked) {
-                    menuItem.isChecked = true
-                }
-                if (position == 1) {
-                    maybeLoadHistory()
-                }
-            }
-        })
 
         // Add scrub terms to log (in case it gets exported) // FIXME this should be in Log.getFormatted
         repository.getUsersLiveData().observe(this) {
@@ -185,6 +159,75 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
             SubscriberServiceManager.refresh(this)
         }
 
+        // Battery banner
+        val batteryBanner = findViewById<View>(R.id.main_banner_battery) // Banner visibility is toggled in onResume()
+        val dontAskAgainButton = findViewById<Button>(R.id.main_banner_battery_dontaskagain)
+        val askLaterButton = findViewById<Button>(R.id.main_banner_battery_ask_later)
+        val fixNowButton = findViewById<Button>(R.id.main_banner_battery_fix_now)
+        dontAskAgainButton.setOnClickListener {
+            batteryBanner.visibility = View.GONE
+            repository.setBatteryOptimizationsRemindTime(Repository.BATTERY_OPTIMIZATIONS_REMIND_TIME_NEVER)
+        }
+        askLaterButton.setOnClickListener {
+            batteryBanner.visibility = View.GONE
+            repository.setBatteryOptimizationsRemindTime(System.currentTimeMillis() + ONE_DAY_MILLIS)
+        }
+        fixNowButton.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                startActivity(intent)
+            }
+        }
+
+        // WebSocket banner
+        val wsBanner = findViewById<View>(R.id.main_banner_websocket) // Banner visibility is toggled in onResume()
+        val wsText = findViewById<TextView>(R.id.main_banner_websocket_text)
+        val wsDismissButton = findViewById<Button>(R.id.main_banner_websocket_dontaskagain)
+        val wsRemindButton = findViewById<Button>(R.id.main_banner_websocket_remind_later)
+        val wsEnableButton = findViewById<Button>(R.id.main_banner_websocket_enable)
+        wsText.movementMethod = LinkMovementMethod.getInstance() // Make links clickable
+        wsDismissButton.setOnClickListener {
+            wsBanner.visibility = View.GONE
+            repository.setWebSocketRemindTime(Repository.WEBSOCKET_REMIND_TIME_NEVER)
+        }
+        wsRemindButton.setOnClickListener {
+            wsBanner.visibility = View.GONE
+            repository.setWebSocketRemindTime(System.currentTimeMillis() + ONE_DAY_MILLIS)
+        }
+        wsEnableButton.setOnClickListener {
+            repository.setConnectionProtocol(Repository.CONNECTION_PROTOCOL_WS)
+            SubscriberServiceManager(this).restart()
+            wsBanner.visibility = View.GONE
+
+            // Maybe show WebSocketReconnectBanner
+            viewModel.list().observe(this) {
+                it?.let { subscriptions ->
+                    showHideWebSocketReconnectBanner(subscriptions)
+                }
+            }
+        }
+
+        // WebSocket Reconnect banner
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val wsReconnectBanner = findViewById<View>(R.id.main_banner_websocket_reconnect)
+            val wsReconnectText = findViewById<TextView>(R.id.main_banner_websocket_reconnect_text)
+            val wsReconnectDismissButton = findViewById<Button>(R.id.main_banner_websocket_reconnect_dontaskagain)
+            val wsReconnectRemindButton = findViewById<Button>(R.id.main_banner_websocket_reconnect_remind_later)
+            val wsReconnectEnableButton = findViewById<Button>(R.id.main_banner_websocket_reconnect_enable)
+            wsReconnectText.movementMethod = LinkMovementMethod.getInstance() // Make links clickable
+            wsReconnectDismissButton.setOnClickListener {
+                wsReconnectBanner.visibility = View.GONE
+                repository.setWebSocketReconnectRemindTime(Repository.WEBSOCKET_RECONNECT_REMIND_TIME_NEVER)
+            }
+            wsReconnectRemindButton.setOnClickListener {
+                wsReconnectBanner.visibility = View.GONE
+                repository.setWebSocketReconnectRemindTime(System.currentTimeMillis() + ONE_DAY_MILLIS)
+            }
+            wsReconnectEnableButton.setOnClickListener {
+                startActivity(Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+            }
+        }
+
         // Create notification channels right away, so we can configure them immediately after installing the app
         dispatcher?.init()
 
@@ -201,332 +244,6 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
 
         // Permissions
         maybeRequestNotificationPermission()
-    }
-
-    private fun initializeAlertsPage(pageView: View) {
-        alertsPageView = pageView
-        if (alertsPageInitialized) {
-            return
-        }
-        alertsPageInitialized = true
-
-        fab = pageView.findViewById(R.id.fab)
-        fab.hide()
-        fab.isEnabled = false
-        fab.isClickable = false
-        fab.visibility = View.GONE
-
-        mainListContainer = pageView.findViewById(R.id.main_subscriptions_list_container)
-        mainListContainer.setOnRefreshListener { refreshAllSubscriptions() }
-        mainListContainer.setColorSchemeResources(Colors.refreshProgressIndicator)
-
-        val noEntries: View = pageView.findViewById(R.id.main_no_subscriptions)
-        val onSubscriptionClick = { s: Subscription -> onSubscriptionItemClick(s) }
-        val onSubscriptionLongClick = { s: Subscription -> onSubscriptionItemLongClick(s) }
-
-        mainList = pageView.findViewById(R.id.main_subscriptions_list)
-        mainList.layoutManager = LinearLayoutManager(this)
-        adapter = MainAdapter(repository, onSubscriptionClick, onSubscriptionLongClick)
-        mainList.adapter = adapter
-
-        viewModel.list().observe(this) { subscriptions ->
-            subscriptions?.let {
-                adapter.submitList(it as MutableList<Subscription>)
-                if (it.isEmpty()) {
-                    mainListContainer.visibility = View.GONE
-                    noEntries.visibility = View.VISIBLE
-                } else {
-                    mainListContainer.visibility = View.VISIBLE
-                    noEntries.visibility = View.GONE
-                }
-
-                it.forEach { s ->
-                    Log.addScrubTerm(shortUrl(s.baseUrl), Log.TermType.Domain)
-                    Log.addScrubTerm(s.topic)
-                }
-
-                showHideBatteryBanner(it)
-                showHideWebSocketBanner(it)
-                showHideWebSocketReconnectBanner(it)
-            }
-        }
-
-        val batteryBanner = pageView.findViewById<View>(R.id.main_banner_battery)
-        val dontAskAgainButton = pageView.findViewById<Button>(R.id.main_banner_battery_dontaskagain)
-        val askLaterButton = pageView.findViewById<Button>(R.id.main_banner_battery_ask_later)
-        val fixNowButton = pageView.findViewById<Button>(R.id.main_banner_battery_fix_now)
-        dontAskAgainButton.setOnClickListener {
-            batteryBanner.visibility = View.GONE
-            repository.setBatteryOptimizationsRemindTime(Repository.BATTERY_OPTIMIZATIONS_REMIND_TIME_NEVER)
-        }
-        askLaterButton.setOnClickListener {
-            batteryBanner.visibility = View.GONE
-            repository.setBatteryOptimizationsRemindTime(System.currentTimeMillis() + ONE_DAY_MILLIS)
-        }
-        fixNowButton.setOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                startActivity(intent)
-            }
-        }
-
-        val wsBanner = pageView.findViewById<View>(R.id.main_banner_websocket)
-        val wsText = pageView.findViewById<TextView>(R.id.main_banner_websocket_text)
-        val wsDismissButton = pageView.findViewById<Button>(R.id.main_banner_websocket_dontaskagain)
-        val wsRemindButton = pageView.findViewById<Button>(R.id.main_banner_websocket_remind_later)
-        val wsEnableButton = pageView.findViewById<Button>(R.id.main_banner_websocket_enable)
-        wsText.movementMethod = LinkMovementMethod.getInstance()
-        wsDismissButton.setOnClickListener {
-            wsBanner.visibility = View.GONE
-            repository.setWebSocketRemindTime(Repository.WEBSOCKET_REMIND_TIME_NEVER)
-        }
-        wsRemindButton.setOnClickListener {
-            wsBanner.visibility = View.GONE
-            repository.setWebSocketRemindTime(System.currentTimeMillis() + ONE_DAY_MILLIS)
-        }
-        wsEnableButton.setOnClickListener {
-            repository.setConnectionProtocol(Repository.CONNECTION_PROTOCOL_WS)
-            SubscriberServiceManager(this).restart()
-            wsBanner.visibility = View.GONE
-
-            viewModel.list().observe(this) {
-                it?.let { subscriptions ->
-                    showHideWebSocketReconnectBanner(subscriptions)
-                }
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val wsReconnectBanner = pageView.findViewById<View>(R.id.main_banner_websocket_reconnect)
-            val wsReconnectText = pageView.findViewById<TextView>(R.id.main_banner_websocket_reconnect_text)
-            val wsReconnectDismissButton = pageView.findViewById<Button>(R.id.main_banner_websocket_reconnect_dontaskagain)
-            val wsReconnectRemindButton = pageView.findViewById<Button>(R.id.main_banner_websocket_reconnect_remind_later)
-            val wsReconnectEnableButton = pageView.findViewById<Button>(R.id.main_banner_websocket_reconnect_enable)
-            wsReconnectText.movementMethod = LinkMovementMethod.getInstance()
-            wsReconnectDismissButton.setOnClickListener {
-                wsReconnectBanner.visibility = View.GONE
-                repository.setWebSocketReconnectRemindTime(Repository.WEBSOCKET_RECONNECT_REMIND_TIME_NEVER)
-            }
-            wsReconnectRemindButton.setOnClickListener {
-                wsReconnectBanner.visibility = View.GONE
-                repository.setWebSocketReconnectRemindTime(System.currentTimeMillis() + ONE_DAY_MILLIS)
-            }
-            wsReconnectEnableButton.setOnClickListener {
-                startActivity(Intent(ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
-            }
-        }
-    }
-
-    private fun initializeHistoryPage(pageView: View) {
-        if (historyInitialized) {
-            return
-        }
-        historyInitialized = true
-
-        historySwipeRefresh = pageView.findViewById(R.id.history_refresh_layout)
-        historySwipeRefresh?.setColorSchemeResources(Colors.refreshProgressIndicator)
-        historyLoadingView = pageView.findViewById(R.id.history_loading)
-        historyStatusText = pageView.findViewById(R.id.history_status_text)
-
-        val historyList = pageView.findViewById<RecyclerView>(R.id.history_list)
-        historyAdapter = QuakeHistoryAdapter()
-        historyList.layoutManager = LinearLayoutManager(this)
-        historyList.adapter = historyAdapter
-
-        historySwipeRefresh?.setOnRefreshListener { loadQuakeHistory(forceRefresh = true) }
-    }
-
-    private fun maybeLoadHistory(forceRefresh: Boolean = false) {
-        if (!historyInitialized) {
-            return
-        }
-        if (isLoadingHistory) {
-            return
-        }
-        if (!forceRefresh && historyAdapter?.currentList?.isNotEmpty() == true) {
-            return
-        }
-        loadQuakeHistory(forceRefresh)
-    }
-
-    private fun loadQuakeHistory(forceRefresh: Boolean = false) {
-        if (!historyInitialized) {
-            return
-        }
-        if (isLoadingHistory) {
-            return
-        }
-        if (!forceRefresh && historyAdapter?.currentList?.isNotEmpty() == true) {
-            return
-        }
-
-        isLoadingHistory = true
-        historyStatusText?.visibility = View.GONE
-        if (historySwipeRefresh?.isRefreshing != true) {
-            historyLoadingView?.visibility = View.VISIBLE
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val request = Request.Builder()
-                    .url(getString(R.string.quake_history_url))
-                    .header("Accept", "application/json")
-                    .build()
-                val response = historyClient.newCall(request).execute()
-                response.use {
-                    if (!it.isSuccessful) {
-                        throw Exception("HTTP ${it.code}")
-                    }
-                    val body = it.body?.string()?.trim().orEmpty()
-                    val reports = parseEarthquakeReports(body)
-                    withContext(Dispatchers.Main) {
-                        historyAdapter?.submitList(reports)
-                        historyLoadingView?.visibility = View.GONE
-                        historySwipeRefresh?.isRefreshing = false
-                        if (reports.isEmpty()) {
-                            historyStatusText?.text = getString(R.string.quake_history_empty)
-                            historyStatusText?.visibility = View.VISIBLE
-                        } else {
-                            historyStatusText?.visibility = View.GONE
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to load quake history: ${e.message}", e)
-                withContext(Dispatchers.Main) {
-                    historyLoadingView?.visibility = View.GONE
-                    historySwipeRefresh?.isRefreshing = false
-                    val message = e.localizedMessage ?: e.javaClass.simpleName
-                    val shouldShowStatus = historyAdapter?.currentList?.isEmpty() != false
-                    if (shouldShowStatus) {
-                        historyStatusText?.text = getString(R.string.quake_history_error, message)
-                        historyStatusText?.visibility = View.VISIBLE
-                    }
-                }
-            } finally {
-                isLoadingHistory = false
-            }
-        }
-    }
-
-    private fun parseEarthquakeReports(body: String): List<EarthquakeReport> {
-        if (body.isBlank()) {
-            return emptyList()
-        }
-        val trimmed = body.trim()
-        val array = when {
-            trimmed.startsWith("[") -> JSONArray(trimmed)
-            trimmed.startsWith("{") -> {
-                val root = JSONObject(trimmed)
-                root.optJSONArray("data")
-                    ?: root.optJSONArray("laporan")
-                    ?: root.optJSONArray("results")
-                    ?: JSONArray().apply { put(root) }
-            }
-            else -> return emptyList()
-        }
-        val reports = mutableListOf<EarthquakeReport>()
-        for (i in 0 until array.length()) {
-            val obj = array.optJSONObject(i) ?: continue
-            reports.add(parseEarthquakeReport(obj))
-        }
-        return reports
-    }
-
-    private fun parseEarthquakeReport(obj: JSONObject): EarthquakeReport {
-        val id = obj.optString("id").ifBlank { obj.optString("ID") }
-        val time = listOf("waktu", "waktu_gempa", "datetime", "tanggal", "time", "jam")
-            .map { obj.optString(it) }
-            .firstOrNull { it.isNotBlank() } ?: ""
-        val magnitudeRaw = listOf("magnitudo", "magnitude", "mag", "sr")
-            .map { obj.optString(it) }
-            .firstOrNull { it.isNotBlank() } ?: ""
-        val depthRaw = listOf("kedalaman", "depth")
-            .map { obj.optString(it) }
-            .firstOrNull { it.isNotBlank() } ?: ""
-        val region = listOf("wilayah", "lokasi", "region", "area", "place", "daerah")
-            .map { obj.optString(it) }
-            .firstOrNull { it.isNotBlank() } ?: ""
-        val potential = listOf("potensi", "potential", "tsunami")
-            .map { obj.optString(it) }
-            .firstOrNull { it.isNotBlank() } ?: ""
-        val felt = listOf("dirasakan", "felt")
-            .map { obj.optString(it) }
-            .firstOrNull { it.isNotBlank() } ?: ""
-        val latitude = listOf("lintang", "latitude", "lat")
-            .map { obj.optString(it) }
-            .firstOrNull { it.isNotBlank() } ?: ""
-        val longitude = listOf("bujur", "longitude", "lon", "long")
-            .map { obj.optString(it) }
-            .firstOrNull { it.isNotBlank() } ?: ""
-
-        val knownKeys = setOf(
-            "id", "ID", "waktu", "waktu_gempa", "datetime", "tanggal", "time", "jam",
-            "magnitudo", "magnitude", "mag", "sr", "kedalaman", "depth",
-            "wilayah", "lokasi", "region", "area", "place", "daerah",
-            "potensi", "potential", "tsunami", "dirasakan", "felt",
-            "lintang", "latitude", "lat", "bujur", "longitude", "lon", "long"
-        )
-        val additional = mutableListOf<Pair<String, String>>()
-        val keys = obj.keys()
-        while (keys.hasNext()) {
-            val key = keys.next()
-            if (knownKeys.contains(key)) {
-                continue
-            }
-            val rawValue = obj.optString(key)
-            if (rawValue.isNullOrBlank()) {
-                continue
-            }
-            if (rawValue.equals("null", ignoreCase = true)) {
-                continue
-            }
-            val label = key.replaceFirstChar { character ->
-                if (character.isLowerCase()) {
-                    character.titlecase(Locale.getDefault())
-                } else {
-                    character.toString()
-                }
-            }
-            additional.add(label to rawValue)
-        }
-
-        return EarthquakeReport(
-            id = id,
-            time = time,
-            magnitude = formatMagnitude(magnitudeRaw),
-            depth = formatDepth(depthRaw),
-            region = region,
-            potential = potential,
-            felt = felt,
-            latitude = latitude,
-            longitude = longitude,
-            additionalDetails = additional
-        )
-    }
-
-    private fun formatMagnitude(value: String): String {
-        val trimmed = value.trim()
-        if (trimmed.isBlank()) {
-            return ""
-        }
-        return if (trimmed.startsWith("M", ignoreCase = true) || trimmed.contains("SR", ignoreCase = true)) {
-            trimmed
-        } else {
-            "M $trimmed"
-        }
-    }
-
-    private fun formatDepth(value: String): String {
-        val trimmed = value.trim()
-        if (trimmed.isBlank()) {
-            return ""
-        }
-        return if (trimmed.contains("km", ignoreCase = true)) {
-            trimmed
-        } else {
-            "$trimmed km"
-        }
     }
 
     private fun maybeRequestNotificationPermission() {
@@ -549,8 +266,7 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
         val batteryRemindTimeReached = repository.getBatteryOptimizationsRemindTime() < System.currentTimeMillis()
         val ignoringOptimizations = isIgnoringBatteryOptimizations(this@MainActivity)
         val showBanner = hasInstantSubscriptions && batteryRemindTimeReached && !ignoringOptimizations
-        val view = alertsPageView ?: return
-        val batteryBanner = view.findViewById<View>(R.id.main_banner_battery)
+        val batteryBanner = findViewById<View>(R.id.main_banner_battery)
         batteryBanner.visibility = if (showBanner) View.VISIBLE else View.GONE
         Log.d(TAG, "Battery: ignoring optimizations = $ignoringOptimizations (we want this to be true); instant subscriptions = $hasInstantSubscriptions; remind time reached = $batteryRemindTimeReached; banner = $showBanner")
     }
@@ -560,14 +276,12 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
         val usingWebSockets = repository.getConnectionProtocol() == Repository.CONNECTION_PROTOCOL_WS
         val wsRemindTimeReached = repository.getWebSocketRemindTime() < System.currentTimeMillis()
         val showBanner = hasSelfHostedSubscriptions && wsRemindTimeReached && !usingWebSockets
-        val view = alertsPageView ?: return
-        val wsBanner = view.findViewById<View>(R.id.main_banner_websocket)
+        val wsBanner = findViewById<View>(R.id.main_banner_websocket)
         wsBanner.visibility = if (showBanner) View.VISIBLE else View.GONE
     }
 
     private fun showHideWebSocketReconnectBanner(subscriptions: List<Subscription>) {
-        val view = alertsPageView ?: return
-        val wsReconnectBanner = view.findViewById<View>(R.id.main_banner_websocket_reconnect)
+        val wsReconnectBanner = findViewById<View>(R.id.main_banner_websocket_reconnect)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val hasSelfHostedSubscriptions = subscriptions.count { it.baseUrl != appBaseUrl } > 0
             val usingWebSockets = repository.getConnectionProtocol() == Repository.CONNECTION_PROTOCOL_WS
