@@ -54,7 +54,6 @@
     </style>
 
     <style name="Widget.Quake.BottomNav.ActiveIndicator" parent="@style/Widget.MaterialComponents.NavigationBar.ActiveIndicator">
-        <item name="android:width">wrap_content</item>
         <item name="android:height">36dp</item>
         <item name="android:insetLeft">12dp</item>
         <item name="android:insetRight">12dp</item>
