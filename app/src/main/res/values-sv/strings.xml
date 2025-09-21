@@ -160,7 +160,7 @@
     <string name="settings_notifications_insistent_max_priority_title">Fortsätt visa meddelande med högsta prioritet</string>
     <string name="settings_notifications_insistent_max_priority_summary_enabled">Notifieringar med max prioritet visas tills avvisats</string>
     <string name="settings_advanced_clear_logs_title">Rensa loggar</string>
-    <string name="settings_backup_restore_backup_failed">Säkerhetskopiering misslyckades: %1$s</string>
+    <string name="settings_backup_restore_backup_failed">Säkerhetskopiering%1$ misslyckad: %1$s</string>
     <string name="settings_advanced_export_logs_copied_url">Loggfiler uppladdat och URL kopierad</string>
     <string name="detail_settings_notifications_dedicated_channels_summary_on">Använder anpassade inställningar för den här prenumerationen</string>
     <string name="detail_settings_notifications_dedicated_channels_title">Egna notfieringsinställningar</string>
