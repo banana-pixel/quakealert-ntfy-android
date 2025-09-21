@@ -175,6 +175,7 @@
     <string name="quake_history_felt_format">Felt reports: %1$s</string>
     <string name="quake_history_notes_format">Notes: %1$s</string>
     <string name="quake_history_more_details">More details</string>
+    <string name="quake_history_duration_value_format">%1$s seconds</string>
     <string name="quake_history_label_shakemap">Shakemap</string>
     <string name="quake_history_label_event_id">Event ID</string>
     <string name="quake_history_label_source">Source</string>
