@@ -35,6 +35,10 @@
 
     <!-- Main activity: Action bar -->
     <string name="main_action_bar_title">Subscribed topics</string>
+    <string name="quake_alerts_title">Quake Alerts</string>
+    <string name="quake_history_title">Quake History Reports</string>
+    <string name="nav_quake_alerts">Quake Alerts</string>
+    <string name="nav_quake_history">Quake History Reports</string>
     <string name="main_menu_notifications_enabled">Notifications on</string>
     <string name="main_menu_notifications_disabled_forever">Notifications muted</string>
     <string name="main_menu_notifications_disabled_until">Notifications muted until %1$s</string>
@@ -158,6 +162,15 @@
     <string name="detail_item_saved_successfully">Saved as \"%1$s\" in the \"Downloads\" folder</string>
     <string name="detail_item_cannot_download">Cannot open or download attachment. The link expired and no local file could be found.</string>
     <string name="detail_item_cannot_open">Cannot open attachment: %1$s</string>
+
+    <!-- Quake history -->
+    <string name="quake_history_error_generic">Unable to load quake history. Please try again later.</string>
+    <string name="quake_history_empty">No quake history reports are available right now.</string>
+    <string name="quake_history_magnitude_format">Magnitude: %1$s</string>
+    <string name="quake_history_depth_format">Depth: %1$s</string>
+    <string name="quake_history_coordinates_format">Coordinates: %1$s</string>
+    <string name="quake_history_potential_format">Potential: %1$s</string>
+    <string name="quake_history_unknown_location">Unknown location</string>
     <string name="detail_item_cannot_open_not_found">Cannot open attachment: The file may have been deleted, or no installed app can open the file.</string>
     <string name="detail_item_cannot_open_url">Cannot open URL: %1$s</string>
     <string name="detail_item_cannot_open_apk">Apps cannot be installed anymore. Download via browser instead. See issue #531 for details.</string>

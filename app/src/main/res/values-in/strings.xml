@@ -19,6 +19,10 @@
 \n%2$s</string>
     <string name="refresh_message_error_one">Tidak dapat memuat ulang langganan: %1$s</string>
     <string name="main_action_bar_title">Topik berlangganan</string>
+    <string name="quake_alerts_title">Peringatan Gempa</string>
+    <string name="quake_history_title">Laporan Riwayat Gempa</string>
+    <string name="nav_quake_alerts">Peringatan Gempa</string>
+    <string name="nav_quake_history">Laporan Riwayat Gempa</string>
     <string name="main_menu_notifications_enabled">Notifikasi menyala</string>
     <string name="main_menu_notifications_disabled_forever">Notifikasi dibisukan</string>
     <string name="main_menu_notifications_disabled_until">Notifikasi dibisukan sampai %1$s</string>
@@ -158,6 +162,14 @@
     <string name="settings_general_header">Umum</string>
     <string name="settings_general_default_base_url_title">Server bawaan</string>
     <string name="settings_general_default_base_url_message">Masukkan URL akar server Anda untuk menggunakan server Anda sendiri untuk bawaan ketika berlangganan ke topik baru dan/atau membagikan ke topik.</string>
+
+    <string name="quake_history_error_generic">Tidak dapat memuat laporan gempa. Coba lagi nanti.</string>
+    <string name="quake_history_empty">Belum ada laporan riwayat gempa.</string>
+    <string name="quake_history_magnitude_format">Magnitudo: %1$s</string>
+    <string name="quake_history_depth_format">Kedalaman: %1$s</string>
+    <string name="quake_history_coordinates_format">Koordinat: %1$s</string>
+    <string name="quake_history_potential_format">Potensi: %1$s</string>
+    <string name="quake_history_unknown_location">Lokasi tidak diketahui</string>
     <string name="settings_general_default_base_url_default_summary">%1$s (bawaan)</string>
     <string name="settings_general_users_title">Kelola pengguna</string>
     <string name="settings_general_users_summary">Tambahkan/hapus pengguna untuk topik yang dilindungi</string>

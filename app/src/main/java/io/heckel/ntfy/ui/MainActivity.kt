@@ -30,6 +30,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.work.*
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import io.heckel.ntfy.BuildConfig
 import io.heckel.ntfy.R
@@ -67,6 +68,7 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
     private lateinit var mainListContainer: SwipeRefreshLayout
     private lateinit var adapter: MainAdapter
     private lateinit var fab: FloatingActionButton
+    private lateinit var bottomNavigation: BottomNavigationView
 
     // Other stuff
     private var actionMode: ActionMode? = null
@@ -86,8 +88,24 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
         dispatcher = NotificationDispatcher(this, repository)
         appBaseUrl = getString(R.string.app_base_url)
 
+        // Navigation bar
+        bottomNavigation = findViewById(R.id.bottom_navigation)
+        bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_alerts -> true
+                R.id.menu_history -> {
+                    startActivity(Intent(this, QuakeHistoryActivity::class.java))
+                    overridePendingTransition(0, 0)
+                    true
+                }
+                else -> false
+            }
+        }
+        bottomNavigation.setOnItemReselectedListener { }
+        bottomNavigation.selectedItemId = R.id.menu_alerts
+
         // Action bar
-        title = getString(R.string.main_action_bar_title)
+        title = getString(R.string.quake_alerts_title)
 
         // Floating action button ("+")
         fab = findViewById(R.id.fab)
@@ -257,6 +275,9 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
 
     override fun onResume() {
         super.onResume()
+        if (::bottomNavigation.isInitialized) {
+            bottomNavigation.selectedItemId = R.id.menu_alerts
+        }
         showHideNotificationMenuItems()
         redrawList()
     }
