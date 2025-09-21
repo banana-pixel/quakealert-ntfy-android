@@ -184,9 +184,13 @@ class QuakeHistoryActivity : AppCompatActivity() {
     private fun parseItem(obj: com.google.gson.JsonObject): QuakeReport? {
         data class FieldValue(val key: String, val value: String)
 
+        val consumedKeys = mutableSetOf<String>()
+
         fun com.google.gson.JsonObject.valueFor(vararg keys: String): FieldValue? {
             for (candidate in keys) {
-                val entry = entrySet().firstOrNull { it.key.equals(candidate, ignoreCase = true) } ?: continue
+                val entry = entrySet()
+                    .firstOrNull { it.key.equals(candidate, ignoreCase = true) && !consumedKeys.contains(it.key.lowercase()) }
+                    ?: continue
                 val element = entry.value
                 if (element != null && element.isJsonPrimitive) {
                     val value = element.asString.trim()
@@ -198,8 +202,6 @@ class QuakeHistoryActivity : AppCompatActivity() {
             return null
         }
 
-        val consumedKeys = mutableSetOf<String>()
-
         fun FieldValue.consume(): String {
             consumedKeys.add(key.lowercase())
             return value
@@ -208,6 +210,15 @@ class QuakeHistoryActivity : AppCompatActivity() {
         val date = obj.valueFor("tanggal", "date", "day", "tanggal_indo")?.consume()
         val time = obj.valueFor("jam", "time", "waktu")?.consume()
         val magnitude = obj.valueFor("magnitudo", "magnitude", "mag", "m", "sr")?.consume()
+        var intensity = obj.valueFor(
+            "intensitas",
+            "intensitas_indo",
+            "intensity",
+            "intensitas_mmi",
+            "intensity_mmi",
+            "intensity_m",
+            "skala_mmi"
+        )?.consume()
         val depth = obj.valueFor("kedalaman", "depth")?.consume()
         val potential = obj.valueFor("potensi", "potential", "warning", "peringatan", "tsunami")?.consume()
         val coordinatesRaw = obj.valueFor("coordinates", "koordinat", "coordinate")?.consume()
@@ -258,10 +269,29 @@ class QuakeHistoryActivity : AppCompatActivity() {
             if (normalizedKey in consumedKeys) {
                 return@forEach
             }
+            val isIntensityField = normalizedKey.contains("intens") ||
+                (normalizedKey.contains("skala") && normalizedKey.contains("mmi"))
+            if (intensity.isNullOrBlank() && isIntensityField) {
+                intensity = value
+                consumedKeys.add(normalizedKey)
+                return@forEach
+            }
             extras.add(QuakeReportField(key = entry.key, value = value))
         }
 
-        val hasContent = listOf(date, time, magnitude, depth, location, potential, coordinates, notes, felt, shakemapUrl)
+        val hasContent = listOf(
+            date,
+            time,
+            magnitude,
+            intensity,
+            depth,
+            location,
+            potential,
+            coordinates,
+            notes,
+            felt,
+            shakemapUrl
+        )
             .any { !it.isNullOrBlank() } || extras.isNotEmpty()
         if (!hasContent) {
             return null
@@ -271,6 +301,7 @@ class QuakeHistoryActivity : AppCompatActivity() {
             date = date,
             time = time,
             magnitude = magnitude,
+            intensity = intensity,
             depth = depth,
             location = location,
             potential = potential,
