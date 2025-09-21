@@ -35,8 +35,6 @@
 
     <!-- Main activity: Action bar -->
     <string name="main_action_bar_title">Subscribed topics</string>
-    <string name="main_quake_alerts_title" translatable="false">Quake Alerts</string>
-    <string name="main_quake_history_title" translatable="false">Quake History Reports</string>
     <string name="main_menu_notifications_enabled">Notifications on</string>
     <string name="main_menu_notifications_disabled_forever">Notifications muted</string>
     <string name="main_menu_notifications_disabled_until">Notifications muted until %1$s</string>
@@ -71,19 +69,6 @@
     <string name="main_how_to_link">Detailed instructions available on ntfy.sh, and in the docs.
     </string>
     <string name="main_unified_push_toast">This subscription is managed by %1$s via UnifiedPush</string>
-
-    <!-- Quake history reports -->
-    <string name="history_empty_state">No quake history reports are available right now.</string>
-    <string name="history_error_message">Unable to load quake history reports. %1$s</string>
-    <string name="history_item_unknown_time">Unknown time</string>
-    <string name="history_item_location">Location: %1$s</string>
-    <string name="history_item_coordinates">Coordinates: %1$s</string>
-    <string name="history_item_magnitude">Magnitude: %1$s</string>
-    <string name="history_item_depth">Depth: %1$s</string>
-    <string name="history_item_potential">Potential: %1$s</string>
-    <string name="history_item_felt">Felt reports: %1$s</string>
-    <string name="history_item_source">Source: %1$s</string>
-    <string name="history_item_event_id">Event ID: %1$s</string>
 
     <!-- Main activity: Battery banner -->
     <string name="main_banner_battery_text">Battery optimization should be off for the app to avoid notification delivery issues.</string>
