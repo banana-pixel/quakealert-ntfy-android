@@ -38,7 +38,7 @@
     <string name="main_tab_alerts">Quake Alerts</string>
     <string name="main_tab_history">Quake History Reports</string>
     <string name="quake_history_title">Quake History Reports</string>
-    <string name="quake_history_empty">We can\'t find any history reports right now. Try refreshing in a moment.</string>
+    <string name="quake_history_empty">We can't find any history reports right now. Try refreshing in a moment.</string>
     <string name="quake_history_error">Unable to load quake history. Check your connection and pull to refresh.</string>
     <string name="quake_history_magnitude_icon_description">Magnitude icon</string>
     <string name="quake_history_depth_icon_description">Depth icon</string>
