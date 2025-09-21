@@ -58,11 +58,20 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
             val context = itemView.context
 
             val magnitudeText = formatMagnitudeText(report.magnitude)
-            magnitudeView.text = magnitudeText
-            magnitudeView.contentDescription = context.getString(
-                R.string.quake_history_magnitude_badge_content_description,
-                magnitudeText
-            )
+            val intensityText = formatIntensityText(findIntensityValue(report))
+            val badgeText = intensityText ?: magnitudeText
+            magnitudeView.text = badgeText
+            magnitudeView.contentDescription = if (intensityText != null) {
+                context.getString(
+                    R.string.quake_history_intensity_badge_content_description,
+                    intensityText
+                )
+            } else {
+                context.getString(
+                    R.string.quake_history_magnitude_badge_content_description,
+                    magnitudeText
+                )
+            }
             val magnitudeColor = ContextCompat.getColor(context, magnitudeColorRes(parseMagnitude(report.magnitude)))
             magnitudeView.background?.let { drawable ->
                 val tinted = DrawableCompat.wrap(drawable.mutate())
@@ -180,6 +189,42 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
             return display.replace(',', '.')
         }
 
+        private fun findIntensityValue(report: QuakeReport): String? {
+            report.intensity?.takeIf { it.isNotBlank() }?.let { return it }
+            report.extraFields.firstOrNull { field ->
+                val key = field.key.lowercase(Locale.getDefault())
+                key.contains("intens") || (key.contains("skala") && key.contains("mmi"))
+            }?.value?.takeIf { it.isNotBlank() }?.let { return it }
+            report.felt?.takeIf { looksLikeIntensity(it) }?.let { return it }
+            return null
+        }
+
+        private fun formatIntensityText(raw: String?): String? {
+            if (raw.isNullOrBlank()) {
+                return null
+            }
+            val cleaned = raw.replace('=', ':')
+                .replace("intensitas", "", ignoreCase = true)
+                .replace("intensity", "", ignoreCase = true)
+                .replace("dirasakan", "", ignoreCase = true)
+                .replace("felt", "", ignoreCase = true)
+                .trim()
+            val afterSeparator = cleaned.substringAfter(':', cleaned)
+            val trimmed = afterSeparator.trim().trimStart('-', '–', '—').trim()
+            return trimmed.ifEmpty { null }
+        }
+
+        private fun looksLikeIntensity(text: String): Boolean {
+            val lower = text.lowercase(Locale.getDefault())
+            if (lower.contains("intens")) {
+                return true
+            }
+            if (MMI_WORD_REGEX.containsMatchIn(text)) {
+                return true
+            }
+            return ROMAN_INTENSITY_REGEX.containsMatchIn(text)
+        }
+
         private fun parseMagnitude(raw: String?): Double? {
             if (raw.isNullOrBlank()) {
                 return null
@@ -235,6 +280,12 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
                     }
                 }
             }
+        }
+        companion object {
+            private val ROMAN_INTENSITY_REGEX = Regex(
+                "(?i)\\b(i|ii|iii|iv|v|vi|vii|viii|ix|x)(?:[-\\/ ](i|ii|iii|iv|v|vi|vii|viii|ix|x))?\\b"
+            )
+            private val MMI_WORD_REGEX = Regex("(?i)\\bmmi\\b")
         }
     }
 }
