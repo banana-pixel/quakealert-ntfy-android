@@ -91,9 +91,10 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
 
         // Floating action button ("+")
         fab = findViewById(R.id.fab)
-        fab.setOnClickListener {
-            onSubscribeButtonClick()
-        }
+        fab.hide()
+        fab.isEnabled = false
+        fab.isClickable = false
+        fab.visibility = View.GONE
 
         // Swipe to refresh
         mainListContainer = findViewById(R.id.main_subscriptions_list_container)
@@ -549,9 +550,7 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
     }
 
     private fun onSubscriptionItemLongClick(subscription: Subscription) {
-        if (actionMode == null) {
-            beginActionMode(subscription)
-        }
+        // Channel deletion is disabled; ignore long presses on subscriptions.
     }
 
     private fun refreshAllSubscriptions() {
