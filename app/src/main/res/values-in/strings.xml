@@ -178,6 +178,7 @@
     <string name="quake_history_label_event_id">ID Kejadian</string>
     <string name="quake_history_label_source">Sumber</string>
     <string name="quake_history_label_updated">Diperbarui</string>
+    <string name="quake_history_label_intensity">Intensitas</string>
     <string name="quake_history_unknown_location">Lokasi tidak diketahui</string>
     <string name="settings_general_default_base_url_default_summary">%1$s (bawaan)</string>
     <string name="settings_general_users_title">Kelola pengguna</string>

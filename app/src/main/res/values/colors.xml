@@ -17,6 +17,11 @@
     <color name="magnitude_low">#2E7D32</color>
     <color name="magnitude_moderate">#FB8C00</color>
     <color name="magnitude_high">#C62828</color>
+    <color name="intensity_weak">#2E7D32</color>
+    <color name="intensity_moderate">#F9A825</color>
+    <color name="intensity_strong">#FB8C00</color>
+    <color name="intensity_very_strong">#F4511E</color>
+    <color name="intensity_extreme">#B71C1C</color>
     <color name="highlight_chip_background">#E8F5E9</color>
     <color name="highlight_chip_text">#1B5E20</color>
     <color name="highlight_chip_stroke">#C8E6C9</color>
