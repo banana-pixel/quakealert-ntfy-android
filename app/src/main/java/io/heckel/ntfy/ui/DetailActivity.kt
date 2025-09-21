@@ -381,10 +381,6 @@ class DetailActivity : AppCompatActivity(), ActionMode.Callback, NotificationFra
                 onSettingsClick()
                 true
             }
-            R.id.detail_menu_unsubscribe -> {
-                onDeleteClick()
-                true
-            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -595,33 +591,6 @@ class DetailActivity : AppCompatActivity(), ActionMode.Callback, NotificationFra
         intent.putExtra(EXTRA_SUBSCRIPTION_TOPIC, subscriptionTopic)
         intent.putExtra(EXTRA_SUBSCRIPTION_DISPLAY_NAME, subscriptionDisplayName)
         startActivity(intent)
-    }
-
-    private fun onDeleteClick() {
-        Log.d(TAG, "Deleting subscription ${topicShortUrl(subscriptionBaseUrl, subscriptionTopic)}")
-
-        val builder = AlertDialog.Builder(this)
-        val dialog = builder
-            .setMessage(R.string.detail_delete_dialog_message)
-            .setPositiveButton(R.string.detail_delete_dialog_permanently_delete) { _, _ ->
-                Log.d(TAG, "Deleting subscription with subscription ID $subscriptionId (topic: $subscriptionTopic)")
-                GlobalScope.launch(Dispatchers.IO) {
-                    repository.removeAllNotifications(subscriptionId)
-                    repository.removeSubscription(subscriptionId)
-                    if (subscriptionBaseUrl == appBaseUrl) {
-                        messenger.unsubscribe(subscriptionTopic)
-                    }
-                }
-                finish()
-            }
-            .setNegativeButton(R.string.detail_delete_dialog_cancel) { _, _ -> /* Do nothing */ }
-            .create()
-        dialog.setOnShowListener {
-            dialog
-                .getButton(AlertDialog.BUTTON_POSITIVE)
-                .dangerButton(this)
-        }
-        dialog.show()
     }
 
     private fun onNotificationClick(notification: Notification) {
