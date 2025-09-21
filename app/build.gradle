@@ -108,6 +108,9 @@ dependencies {
     // RecyclerView
     implementation "androidx.recyclerview:recyclerview:1.3.0"
 
+    // ViewPager2 for swipeable pages
+    implementation "androidx.viewpager2:viewpager2:1.1.0"
+
     // Swipe down to refresh
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
