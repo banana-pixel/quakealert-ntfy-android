@@ -58,20 +58,31 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
         fun bind(report: QuakeReport) {
             val context = itemView.context
 
-            val magnitudeText = formatMagnitudeText(report.magnitude)
+            val magnitudeRaw = report.magnitude
+            val hasMagnitude = !magnitudeRaw.isNullOrBlank()
+            val magnitudeText = formatMagnitudeText(magnitudeRaw)
             val intensityText = formatIntensityText(findIntensityValue(report))
-            magnitudeView.text = buildMagnitudeBadgeText(magnitudeText, intensityText)
-            magnitudeView.contentDescription = if (intensityText != null) {
-                context.getString(
-                    R.string.quake_history_magnitude_intensity_badge_content_description,
-                    magnitudeText,
-                    intensityText
-                )
-            } else {
-                context.getString(
-                    R.string.quake_history_magnitude_badge_content_description,
-                    magnitudeText
-                )
+            magnitudeView.text = buildMagnitudeBadgeText(magnitudeText, intensityText, hasMagnitude)
+            magnitudeView.contentDescription = when {
+                intensityText != null && hasMagnitude -> {
+                    context.getString(
+                        R.string.quake_history_magnitude_intensity_badge_content_description,
+                        magnitudeText,
+                        intensityText
+                    )
+                }
+                intensityText != null -> {
+                    context.getString(
+                        R.string.quake_history_intensity_badge_content_description,
+                        intensityText
+                    )
+                }
+                else -> {
+                    context.getString(
+                        R.string.quake_history_magnitude_badge_content_description,
+                        magnitudeText
+                    )
+                }
             }
             val magnitudeColor = ContextCompat.getColor(context, magnitudeColorRes(parseMagnitude(report.magnitude)))
             magnitudeView.background?.let { drawable ->
@@ -226,7 +237,14 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
             return ROMAN_INTENSITY_REGEX.containsMatchIn(text)
         }
 
-        private fun buildMagnitudeBadgeText(magnitude: String, intensity: String?): CharSequence {
+        private fun buildMagnitudeBadgeText(
+            magnitude: String,
+            intensity: String?,
+            hasMagnitude: Boolean
+        ): CharSequence {
+            if (!hasMagnitude && !intensity.isNullOrBlank()) {
+                return intensity
+            }
             if (intensity.isNullOrBlank()) {
                 return magnitude
             }

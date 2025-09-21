@@ -167,6 +167,8 @@
     <string name="quake_history_empty">Belum ada laporan riwayat gempa.</string>
     <string name="quake_history_magnitude_placeholder">--</string>
     <string name="quake_history_magnitude_badge_content_description">Magnitudo %1$s</string>
+    <string name="quake_history_magnitude_intensity_badge_content_description">Magnitudo %1$s, intensitas %2$s</string>
+    <string name="quake_history_intensity_badge_content_description">Intensitas %1$s</string>
     <string name="quake_history_chip_depth">Kedalaman • %1$s</string>
     <string name="quake_history_chip_coordinates">Koordinat • %1$s</string>
     <string name="quake_history_felt_format">Laporan dirasakan: %1$s</string>
