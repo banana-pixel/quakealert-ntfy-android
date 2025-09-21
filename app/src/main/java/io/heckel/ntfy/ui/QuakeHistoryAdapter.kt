@@ -3,6 +3,7 @@ package io.heckel.ntfy.ui
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
+import android.os.Build
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import io.heckel.ntfy.R
+import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -365,13 +367,66 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
 
         private fun buildExtraText(context: Context, field: QuakeReportField): CharSequence {
             val label = labelForKey(context, field.key)
-            val combined = "$label: ${field.value}"
+            val valueText = formatValueForKey(context, field.key, field.value)
+            val combined = "$label: $valueText"
             val spannable = SpannableString(combined)
             val end = min(label.length + 1, spannable.length)
             if (end > 0) {
                 spannable.setSpan(StyleSpan(Typeface.BOLD), 0, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             return spannable
+        }
+
+        private fun formatValueForKey(context: Context, key: String, value: String): String {
+            val normalizedKey = key.lowercase(Locale.getDefault())
+            if (normalizedKey.contains("durasi") || normalizedKey.contains("duration")) {
+                formatDurationValue(context, value)?.let { formatted ->
+                    return formatted
+                }
+            }
+            return value
+        }
+
+        private fun formatDurationValue(context: Context, rawValue: String): String? {
+            val trimmed = rawValue.trim()
+            if (trimmed.isEmpty() || !DURATION_WITH_OPTIONAL_UNIT_REGEX.matches(trimmed)) {
+                return null
+            }
+            val match = DURATION_VALUE_REGEX.find(trimmed) ?: return null
+            val numericToken = match.value
+            val seconds = numericToken.replace(',', '.').toDoubleOrNull() ?: return null
+            val locale = primaryLocale(context)
+            val formatter = NumberFormat.getNumberInstance(locale).apply {
+                val decimalLength = when {
+                    numericToken.contains('.') -> numericToken.substringAfter('.').length
+                    numericToken.contains(',') -> numericToken.substringAfter(',').length
+                    else -> 0
+                }.coerceIn(0, 3)
+                if (seconds == seconds.toLong().toDouble()) {
+                    maximumFractionDigits = 0
+                } else {
+                    maximumFractionDigits = decimalLength.coerceAtLeast(1)
+                }
+                minimumFractionDigits = 0
+                isGroupingUsed = false
+            }
+            val formattedNumber = formatter.format(seconds)
+            return context.getString(R.string.quake_history_duration_value_format, formattedNumber)
+        }
+
+        private fun primaryLocale(context: Context): Locale {
+            val configuration = context.resources.configuration
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val locales = configuration.locales
+                if (locales.size() > 0) {
+                    locales.get(0)
+                } else {
+                    Locale.getDefault()
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                configuration.locale
+            }
         }
 
         private fun labelForKey(context: Context, key: String): String {
@@ -421,6 +476,11 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
                 "XI" to 11,
                 "XII" to 12
             )
+            private val DURATION_WITH_OPTIONAL_UNIT_REGEX = Regex(
+                "^\\s*\\d+(?:[.,]\\d+)?\\s*(?:detik|seconds?|secs?|s)?\\s*$",
+                RegexOption.IGNORE_CASE
+            )
+            private val DURATION_VALUE_REGEX = Regex("\\d+(?:[.,]\\d+)?")
         }
 
         private data class IntensityInfo(
