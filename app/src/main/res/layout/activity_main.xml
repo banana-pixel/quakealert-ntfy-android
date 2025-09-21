@@ -301,6 +301,7 @@
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 style="@style/Widget.Quake.BottomNavigationView"
+                app:itemHorizontalTranslationEnabled="false"
                 app:menu="@menu/menu_bottom_navigation" />
 
     </com.google.android.material.card.MaterialCardView>
