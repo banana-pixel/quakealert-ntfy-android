@@ -23,6 +23,7 @@ import com.google.android.material.chip.ChipGroup
 import io.heckel.ntfy.R
 import java.util.Locale
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistoryViewHolder>() {
     private val reports = mutableListOf<QuakeReport>()
@@ -61,20 +62,22 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
             val magnitudeRaw = report.magnitude
             val hasMagnitude = !magnitudeRaw.isNullOrBlank()
             val magnitudeText = formatMagnitudeText(magnitudeRaw)
-            val intensityText = formatIntensityText(findIntensityValue(report))
-            magnitudeView.text = buildMagnitudeBadgeText(magnitudeText, intensityText, hasMagnitude)
+            val intensityInfo = parseIntensityInfo(findIntensityValue(report))
+            val intensityBadgeText = intensityInfo?.badgeText
+            magnitudeView.text = buildMagnitudeBadgeText(magnitudeText, intensityBadgeText, hasMagnitude)
+            val intensityContentDescription = intensityInfo?.fullText
             magnitudeView.contentDescription = when {
-                intensityText != null && hasMagnitude -> {
+                intensityContentDescription != null && hasMagnitude -> {
                     context.getString(
                         R.string.quake_history_magnitude_intensity_badge_content_description,
                         magnitudeText,
-                        intensityText
+                        intensityContentDescription
                     )
                 }
-                intensityText != null -> {
+                intensityContentDescription != null -> {
                     context.getString(
                         R.string.quake_history_intensity_badge_content_description,
-                        intensityText
+                        intensityContentDescription
                     )
                 }
                 else -> {
@@ -84,7 +87,9 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
                     )
                 }
             }
-            val magnitudeColor = ContextCompat.getColor(context, magnitudeColorRes(parseMagnitude(report.magnitude)))
+            val magnitude = parseMagnitude(report.magnitude)
+            val badgeColorRes = intensityColorRes(intensityInfo?.level) ?: magnitudeColorRes(magnitude)
+            val magnitudeColor = ContextCompat.getColor(context, badgeColorRes)
             magnitudeView.background?.let { drawable ->
                 val tinted = DrawableCompat.wrap(drawable.mutate())
                 DrawableCompat.setTint(tinted, magnitudeColor)
@@ -144,6 +149,14 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
                 }
                 addAll(report.extraFields)
             }.filter { it.value.isNotBlank() }
+                .toMutableList()
+
+            val intensityExtraValue = intensityInfo?.let { info ->
+                if (info.description != null) info.fullText else null
+            }
+            if (intensityExtraValue != null) {
+                extras.add(0, QuakeReportField(key = "intensity", value = intensityExtraValue))
+            }
 
             extrasContainer.removeAllViews()
             if (extras.isNotEmpty()) {
@@ -211,7 +224,7 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
             return null
         }
 
-        private fun formatIntensityText(raw: String?): String? {
+        private fun parseIntensityInfo(raw: String?): IntensityInfo? {
             if (raw.isNullOrBlank()) {
                 return null
             }
@@ -223,7 +236,39 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
                 .trim()
             val afterSeparator = cleaned.substringAfter(':', cleaned)
             val trimmed = afterSeparator.trim().trimStart('-', '–', '—').trim()
-            return trimmed.ifEmpty { null }
+            if (trimmed.isEmpty()) {
+                return null
+            }
+
+            val romanMatch = ROMAN_INTENSITY_REGEX.find(trimmed)
+            val digitMatch = DIGIT_INTENSITY_REGEX.find(trimmed)
+
+            val (badgeText, descriptionStart) = when {
+                romanMatch != null -> romanMatch.value.uppercase(Locale.getDefault()) to (romanMatch.range.last + 1)
+                digitMatch != null -> digitMatch.value.replace(',', '.').trim() to (digitMatch.range.last + 1)
+                else -> trimmed to null
+            }
+
+            val description = descriptionStart?.let { startIndex ->
+                if (startIndex >= trimmed.length) {
+                    null
+                } else {
+                    trimmed.substring(startIndex)
+                        .replaceFirst("MMI", "", ignoreCase = true)
+                        .trimStart('-', '–', '—', ':', ',', ';', ' ')
+                        .trim()
+                        .takeIf { it.isNotEmpty() }
+                }
+            }
+
+            val level = parseIntensityLevel(trimmed) ?: parseIntensityLevel(badgeText)
+
+            return IntensityInfo(
+                badgeText = badgeText,
+                fullText = trimmed,
+                description = description,
+                level = level
+            )
         }
 
         private fun looksLikeIntensity(text: String): Boolean {
@@ -278,6 +323,46 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
             }
         }
 
+        private fun intensityColorRes(level: Int?): Int? {
+            if (level == null) {
+                return null
+            }
+            return when {
+                level >= 9 -> R.color.intensity_extreme
+                level >= 7 -> R.color.intensity_very_strong
+                level >= 5 -> R.color.intensity_strong
+                level >= 3 -> R.color.intensity_moderate
+                else -> R.color.intensity_weak
+            }
+        }
+
+        private fun parseIntensityLevel(text: String): Int? {
+            if (text.isBlank()) {
+                return null
+            }
+            val upper = text.uppercase(Locale.getDefault())
+            val romanValues = ROMAN_INTENSITY_REGEX.findAll(upper)
+                .flatMap { match ->
+                    match.value.split(Regex("[-/ ]+")).mapNotNull { romanToInt(it) }
+                }
+                .toList()
+            if (romanValues.isNotEmpty()) {
+                return romanValues.maxOrNull()
+            }
+            val numericValues = DIGIT_INTENSITY_REGEX.findAll(upper)
+                .flatMap { match ->
+                    match.value.split(Regex("[-/ ]+")).mapNotNull { token ->
+                        token.replace(',', '.').toDoubleOrNull()?.roundToInt()
+                    }
+                }
+                .toList()
+            return numericValues.maxOrNull()
+        }
+
+        private fun romanToInt(value: String): Int? {
+            return ROMAN_VALUES[value]
+        }
+
         private fun buildExtraText(context: Context, field: QuakeReportField): CharSequence {
             val label = labelForKey(context, field.key)
             val combined = "$label: ${field.value}"
@@ -296,6 +381,7 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
                 "eventid", "event_id", "id" -> R.string.quake_history_label_event_id
                 "source", "sumber" -> R.string.quake_history_label_source
                 "update", "updated", "lastupdate" -> R.string.quake_history_label_updated
+                "intensity", "intensitas" -> R.string.quake_history_label_intensity
                 else -> null
             }
             if (labelRes != null) {
@@ -320,6 +406,28 @@ class QuakeHistoryAdapter : RecyclerView.Adapter<QuakeHistoryAdapter.QuakeHistor
                 "(?i)\\b(i|ii|iii|iv|v|vi|vii|viii|ix|x)(?:[-\\/ ](i|ii|iii|iv|v|vi|vii|viii|ix|x))?\\b"
             )
             private val MMI_WORD_REGEX = Regex("(?i)\\bmmi\\b")
+            private val DIGIT_INTENSITY_REGEX = Regex("\\b\\d+(?:[.,]\\d+)?(?:[-\\/ ]\\d+(?:[.,]\\d+)?)?\\b")
+            private val ROMAN_VALUES = mapOf(
+                "I" to 1,
+                "II" to 2,
+                "III" to 3,
+                "IV" to 4,
+                "V" to 5,
+                "VI" to 6,
+                "VII" to 7,
+                "VIII" to 8,
+                "IX" to 9,
+                "X" to 10,
+                "XI" to 11,
+                "XII" to 12
+            )
         }
+
+        private data class IntensityInfo(
+            val badgeText: String,
+            val fullText: String,
+            val description: String?,
+            val level: Int?
+        )
     }
 }
