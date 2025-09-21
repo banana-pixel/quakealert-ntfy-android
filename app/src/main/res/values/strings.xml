@@ -169,6 +169,7 @@
     <string name="quake_history_magnitude_placeholder">--</string>
     <string name="quake_history_magnitude_badge_content_description">Magnitude %1$s</string>
     <string name="quake_history_magnitude_intensity_badge_content_description">Magnitude %1$s, intensity %2$s</string>
+    <string name="quake_history_intensity_badge_content_description">Intensity %1$s</string>
     <string name="quake_history_chip_depth">Depth • %1$s</string>
     <string name="quake_history_chip_coordinates">Coordinates • %1$s</string>
     <string name="quake_history_felt_format">Felt reports: %1$s</string>
