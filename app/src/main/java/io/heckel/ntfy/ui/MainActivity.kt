@@ -30,9 +30,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.work.*
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.progressindicator.CircularProgressIndicator
 import io.heckel.ntfy.BuildConfig
 import io.heckel.ntfy.R
 import io.heckel.ntfy.app.Application
@@ -45,9 +43,6 @@ import io.heckel.ntfy.msg.DownloadType
 import io.heckel.ntfy.msg.NotificationDispatcher
 import io.heckel.ntfy.service.SubscriberService
 import io.heckel.ntfy.service.SubscriberServiceManager
-import io.heckel.ntfy.history.QuakeReport
-import io.heckel.ntfy.ui.history.QuakeHistoryAdapter
-import io.heckel.ntfy.ui.history.QuakeHistoryViewModel
 import io.heckel.ntfy.util.*
 import io.heckel.ntfy.work.DeleteWorker
 import io.heckel.ntfy.work.PollWorker
@@ -62,7 +57,6 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
     private val viewModel by viewModels<SubscriptionsViewModel> {
         SubscriptionsViewModelFactory((application as Application).repository)
     }
-    private val historyViewModel by viewModels<QuakeHistoryViewModel>()
     private val repository by lazy { (application as Application).repository }
     private val api = ApiService()
     private val messenger = FirebaseMessenger()
@@ -73,13 +67,6 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
     private lateinit var mainListContainer: SwipeRefreshLayout
     private lateinit var adapter: MainAdapter
     private lateinit var fab: FloatingActionButton
-    private lateinit var alertsContainer: View
-    private lateinit var bottomNavigation: BottomNavigationView
-    private lateinit var historyContainer: SwipeRefreshLayout
-    private lateinit var historyList: RecyclerView
-    private lateinit var historyAdapter: QuakeHistoryAdapter
-    private lateinit var historyProgress: CircularProgressIndicator
-    private lateinit var historyError: TextView
 
     // Other stuff
     private var actionMode: ActionMode? = null
@@ -91,17 +78,6 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        alertsContainer = findViewById(R.id.main_alerts_container)
-        bottomNavigation = findViewById(R.id.bottom_navigation)
-        historyContainer = findViewById(R.id.history_list_container)
-        historyList = findViewById(R.id.history_list)
-        historyProgress = findViewById(R.id.history_progress)
-        historyError = findViewById(R.id.history_error)
-        historyAdapter = QuakeHistoryAdapter()
-        historyList.adapter = historyAdapter
-        historyContainer.setColorSchemeResources(Colors.refreshProgressIndicator)
-        historyContainer.setOnRefreshListener { historyViewModel.refresh() }
-
         Log.init(this) // Init logs in all entry points
         Log.d(TAG, "Create $this")
 
@@ -111,7 +87,7 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
         appBaseUrl = getString(R.string.app_base_url)
 
         // Action bar
-        title = getString(R.string.main_quake_alerts_title)
+        title = getString(R.string.main_action_bar_title)
 
         // Floating action button ("+")
         fab = findViewById(R.id.fab)
@@ -178,50 +154,10 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
             }
         }
 
-        historyViewModel.reports.observe(this) { reports ->
-            historyAdapter.submitList(reports)
-            updateHistoryMessage(historyViewModel.uiState.value, reports)
-        }
-
-        historyViewModel.uiState.observe(this) { state ->
-            if (!state.loading && historyContainer.isRefreshing) {
-                historyContainer.isRefreshing = false
-            }
-            if (bottomNavigation.selectedItemId == R.id.navigation_history) {
-                historyProgress.visibility = if (state.loading && !historyContainer.isRefreshing) View.VISIBLE else View.GONE
-            } else if (!state.loading) {
-                historyProgress.visibility = View.GONE
-            }
-            updateHistoryMessage(state, historyViewModel.reports.value ?: emptyList())
-        }
-
         // React to changes in instant delivery setting
         viewModel.listIdsWithInstantStatus().observe(this) {
             SubscriberServiceManager.refresh(this)
         }
-
-        bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.navigation_alerts -> {
-                    showAlerts()
-                    true
-                }
-                R.id.navigation_history -> {
-                    showHistory()
-                    true
-                }
-                else -> false
-            }
-        }
-        bottomNavigation.setOnItemReselectedListener { item ->
-            when (item.itemId) {
-                R.id.navigation_alerts -> mainList.smoothScrollToPosition(0)
-                R.id.navigation_history -> historyList.smoothScrollToPosition(0)
-            }
-        }
-        val selectedNavigation = savedInstanceState?.getInt(STATE_SELECTED_NAVIGATION, R.id.navigation_alerts)
-            ?: R.id.navigation_alerts
-        bottomNavigation.selectedItemId = selectedNavigation
 
         // Battery banner
         val batteryBanner = findViewById<View>(R.id.main_banner_battery) // Banner visibility is toggled in onResume()
@@ -319,65 +255,10 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt(STATE_SELECTED_NAVIGATION, bottomNavigation.selectedItemId)
-    }
-
     override fun onResume() {
         super.onResume()
         showHideNotificationMenuItems()
         redrawList()
-    }
-
-    private fun showAlerts() {
-        alertsContainer.visibility = View.VISIBLE
-        historyContainer.visibility = View.GONE
-        if (historyContainer.isRefreshing) {
-            historyContainer.isRefreshing = false
-        }
-        historyProgress.visibility = View.GONE
-        historyError.visibility = View.GONE
-        title = getString(R.string.main_quake_alerts_title)
-    }
-
-    private fun showHistory() {
-        alertsContainer.visibility = View.GONE
-        historyContainer.visibility = View.VISIBLE
-        val state = historyViewModel.uiState.value
-        historyProgress.visibility = if (state?.loading == true && !historyContainer.isRefreshing) {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
-        updateHistoryMessage(state, historyViewModel.reports.value ?: emptyList())
-        title = getString(R.string.main_quake_history_title)
-        historyViewModel.loadInitial()
-    }
-
-    private fun updateHistoryMessage(
-        state: QuakeHistoryViewModel.HistoryUiState?,
-        reports: List<QuakeReport>
-    ) {
-        if (state?.loading == true) {
-            if (!historyContainer.isRefreshing) {
-                historyError.visibility = View.GONE
-            }
-            return
-        }
-        when {
-            state?.errorMessage != null -> {
-                historyError.visibility = View.VISIBLE
-                historyError.text = getString(R.string.history_error_message, state.errorMessage)
-            }
-            reports.isEmpty() -> {
-                historyError.visibility = View.VISIBLE
-                historyError.setText(R.string.history_empty_state)
-            }
-            else -> {
-                historyError.visibility = View.GONE
-            }
-        }
     }
 
     private fun showHideBatteryBanner(subscriptions: List<Subscription>) {
@@ -854,7 +735,6 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
     }
 
     companion object {
-        private const val STATE_SELECTED_NAVIGATION = "state_selected_navigation"
         const val TAG = "NtfyMainActivity"
         const val EXTRA_SUBSCRIPTION_ID = "subscriptionId"
         const val EXTRA_SUBSCRIPTION_BASE_URL = "subscriptionBaseUrl"
