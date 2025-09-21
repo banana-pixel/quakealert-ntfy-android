@@ -7,7 +7,18 @@ repositories {
 }
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.google.gms.google-services'
+
+def hasGoogleServicesJson = fileTree(projectDir) {
+    include 'google-services.json'
+    include 'src/**/google-services.json'
+    exclude 'build/**'
+}.files.any()
+
+if (hasGoogleServicesJson) {
+    apply plugin: 'com.google.gms.google-services'
+} else {
+    logger.lifecycle('google-services.json not found. Skipping Google Services plugin.')
+}
 
 android {
     namespace "io.heckel.ntfy"
@@ -76,8 +87,10 @@ android {
 // Disables GoogleServices tasks for F-Droid variant
 android.applicationVariants.all { variant ->
     def shouldProcessGoogleServices = variant.flavorName == "play"
-    def googleTask = tasks.findByName("process${variant.name.capitalize()}GoogleServices")
-    googleTask.enabled = shouldProcessGoogleServices
+    def googleTaskName = "process${variant.name.capitalize()}GoogleServices"
+    tasks.matching { it.name == googleTaskName }.configureEach {
+        it.enabled = shouldProcessGoogleServices
+    }
 }
 
 dependencies {
