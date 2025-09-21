@@ -4,16 +4,25 @@
                                                    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
                                                    android:layout_height="match_parent">
 
-    <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:shapeAppearance="?shapeAppearanceLargeComponent"
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/main_alerts_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:id="@+id/main_banner_battery"
-            android:visibility="visible"
-    >
+            app:layout_constraintBottom_toTopOf="@+id/bottom_navigation">
+
+        <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:shapeAppearance="?shapeAppearanceLargeComponent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:id="@+id/main_banner_battery"
+                android:visibility="visible"
+        >
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -79,9 +88,9 @@
                     android:text="@string/main_banner_battery_button_fix_now"
                     tools:layout_editor_absoluteX="269dp" tools:layout_editor_absoluteY="67dp"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
+        </com.google.android.material.card.MaterialCardView>
 
-    <com.google.android.material.card.MaterialCardView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:shapeAppearance="?shapeAppearanceLargeComponent" app:layout_constraintStart_toStartOf="parent"
@@ -146,14 +155,14 @@
                     android:text="@string/main_banner_websocket_button_enable_now"
                     tools:layout_editor_absoluteX="253dp" tools:layout_editor_absoluteY="131dp"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
+        </com.google.android.material.card.MaterialCardView>
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:shapeAppearance="?shapeAppearanceLargeComponent" app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/main_banner_websocket"
-        android:id="@+id/main_banner_websocket_reconnect" android:visibility="visible">
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:shapeAppearance="?shapeAppearanceLargeComponent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/main_banner_websocket"
+            android:id="@+id/main_banner_websocket_reconnect" android:visibility="visible">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -213,36 +222,36 @@
                 android:text="@string/main_banner_websocket_reconnect_button_enable_now"
                 tools:layout_editor_absoluteX="253dp" tools:layout_editor_absoluteY="131dp"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
+        </com.google.android.material.card.MaterialCardView>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/main_subscriptions_list_container"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:visibility="visible"
-            app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/main_banner_websocket_reconnect">
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/main_subscriptions_list"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/main_subscriptions_list_container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clickable="true"
-                android:focusable="true"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
-                android:clipToPadding="false"
-                android:background="?android:attr/selectableItemBackground"
-                app:layoutManager="LinearLayoutManager"/>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                android:layout_height="0dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/main_banner_websocket_reconnect">
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/main_subscriptions_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:clipToPadding="false"
+                    android:background="?android:attr/selectableItemBackground"
+                    app:layoutManager="LinearLayoutManager"/>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/fab" app:layout_constraintStart_toStartOf="parent"
-            android:id="@+id/main_no_subscriptions" android:visibility="gone">
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/fab" app:layout_constraintStart_toStartOf="parent"
+                android:id="@+id/main_no_subscriptions" android:visibility="gone">
         <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" app:srcCompat="@drawable/ic_sms_gray_48dp"
@@ -273,18 +282,77 @@
                 android:layout_marginEnd="50dp"
                 android:linksClickable="true"
                 android:autoLink="web"/>
-    </LinearLayout>
+        </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp"
+                android:contentDescription="@string/main_add_button_description"
+                android:src="@drawable/ic_add_black_24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                style="@style/FloatingActionButton"
+        />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/history_list_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_navigation">
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/history_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                app:layoutManager="LinearLayoutManager"/>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/history_progress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="24dp"
-            android:contentDescription="@string/main_add_button_description"
-            android:src="@drawable/ic_add_black_24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@+id/history_list_container"
+            app:layout_constraintBottom_toBottomOf="@+id/history_list_container"
+            app:layout_constraintStart_toStartOf="@+id/history_list_container"
+            app:layout_constraintEnd_toEndOf="@+id/history_list_container"/>
+
+    <TextView
+            android:id="@+id/history_error"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@+id/history_list_container"
+            app:layout_constraintBottom_toBottomOf="@+id/history_list_container"
+            app:layout_constraintStart_toStartOf="@+id/history_list_container"
+            app:layout_constraintEnd_toEndOf="@+id/history_list_container"/>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSurface"
+            app:itemIconTint="@color/bottom_navigation_item_tint"
+            app:itemTextColor="@color/bottom_navigation_item_tint"
+            app:menu="@menu/menu_bottom_navigation"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            style="@style/FloatingActionButton"
-    />
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
