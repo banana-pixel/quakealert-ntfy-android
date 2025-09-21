@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.navigation.NavigationBarView
 import io.heckel.ntfy.R
 import io.heckel.ntfy.msg.ApiService
 import kotlinx.coroutines.Dispatchers
@@ -45,8 +44,6 @@ class QuakeHistoryActivity : AppCompatActivity() {
         title = getString(R.string.quake_history_title)
 
         bottomNavigation = findViewById(R.id.bottom_navigation)
-        bottomNavigation.isItemHorizontalTranslationEnabled = false
-        bottomNavigation.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_LABELED
         bottomNavigation.selectedItemId = R.id.menu_history
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {

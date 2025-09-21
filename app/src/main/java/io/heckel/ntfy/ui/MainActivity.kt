@@ -32,7 +32,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.work.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.navigation.NavigationBarView
 import io.heckel.ntfy.BuildConfig
 import io.heckel.ntfy.R
 import io.heckel.ntfy.app.Application
@@ -91,8 +90,6 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
 
         // Navigation bar
         bottomNavigation = findViewById(R.id.bottom_navigation)
-        bottomNavigation.isItemHorizontalTranslationEnabled = false
-        bottomNavigation.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_LABELED
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.menu_alerts -> true
