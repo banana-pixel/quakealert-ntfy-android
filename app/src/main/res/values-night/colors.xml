@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="magnitude_low">#81C784</color>
+    <color name="magnitude_moderate">#FFB74D</color>
+    <color name="magnitude_high">#EF5350</color>
+    <color name="highlight_chip_background">#1F3B34</color>
+    <color name="highlight_chip_text">#C8E6C9</color>
+    <color name="highlight_chip_stroke">#2A4A42</color>
+    <color name="info_block_background">#2E3438</color>
+    <color name="felt_background">#3A2C23</color>
+    <color name="felt_text">#FFCC80</color>
+    <color name="nav_surface">#1F2528</color>
+    <color name="nav_surface_stroke">#2C3236</color>
+    <color name="bottom_nav_active_bg">#22443C</color>
+    <color name="potential_safe_bg">#0D3A40</color>
+    <color name="potential_safe_text">#80DEEA</color>
+    <color name="potential_warning_bg">#4A1F1F</color>
+    <color name="potential_warning_text">#FFCDD2</color>
+    <color name="potential_unknown_bg">#2E2A40</color>
+    <color name="potential_unknown_text">#D1C4E9</color>
+    <color name="nav_item_ripple_tint">#40338574</color>
+</resources>
