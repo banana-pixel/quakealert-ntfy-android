@@ -19,7 +19,7 @@ android {
         targetSdkVersion 35
 
         versionCode 41
-        versionName "1.17.8"
+        versionName "QA 1.0 - ntfy 1.17.8"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
