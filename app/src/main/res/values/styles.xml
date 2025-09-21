@@ -53,6 +53,9 @@
         <item name="labelVisibilityMode">labeled</item>
     </style>
 
+    <!-- Temporary alias to maintain compatibility with legacy references -->
+    <style name="Widget.Quake.BottomNav" parent="@style/Widget.Quake.BottomNavigationView" />
+
     <style name="Widget.Quake.BottomNav.ActiveIndicator">
         <item name="android:height">36dp</item>
         <item name="android:insetLeft">12dp</item>
