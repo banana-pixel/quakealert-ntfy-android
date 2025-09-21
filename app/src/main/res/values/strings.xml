@@ -34,23 +34,7 @@
     <string name="refresh_message_error_one">Could not refresh subscription: %1$s</string>
 
     <!-- Main activity: Action bar -->
-    <string name="main_action_bar_title">Subscribed Topics to Quake Alerts</string>
-    <string name="main_tab_alerts">Quake Alerts</string>
-    <string name="main_tab_history">Quake History Reports</string>
-    <string name="quake_history_title">Quake History Reports</string>
-    <string name="quake_history_empty">We can't find any history reports right now. Try refreshing in a moment.</string>
-    <string name="quake_history_error">Unable to load quake history. Check your connection and pull to refresh.</string>
-    <string name="quake_history_magnitude_icon_description">Magnitude icon</string>
-    <string name="quake_history_depth_icon_description">Depth icon</string>
-    <string name="quake_history_coordinate_icon_description">Location icon</string>
-    <string name="quake_history_no_id">No ID</string>
-    <string name="quake_history_id_prefix">ID: %1$s</string>
-    <string name="quake_history_unknown_location">Unknown location</string>
-    <string name="quake_history_unknown_time">Unknown time</string>
-    <string name="quake_history_unknown_magnitude">Magnitude unavailable</string>
-    <string name="quake_history_unknown_depth">Depth unavailable</string>
-    <string name="quake_history_unknown_coordinates">Coordinates unavailable</string>
-    <string name="quake_history_no_potential">No potential impact reported</string>
+    <string name="main_action_bar_title">Subscribed topics</string>
     <string name="main_menu_notifications_enabled">Notifications on</string>
     <string name="main_menu_notifications_disabled_forever">Notifications muted</string>
     <string name="main_menu_notifications_disabled_until">Notifications muted until %1$s</string>
