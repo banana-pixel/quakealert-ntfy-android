@@ -8,5 +8,13 @@ data class QuakeReport(
     val location: String?,
     val potential: String?,
     val coordinates: String?,
-    val notes: String?
+    val notes: String?,
+    val felt: String?,
+    val shakemapUrl: String?,
+    val extraFields: List<QuakeReportField>
+)
+
+data class QuakeReportField(
+    val key: String,
+    val value: String
 )

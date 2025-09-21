@@ -13,5 +13,25 @@
     <color name="teal_dark">#2a6e60</color> <!-- Action bar background in action mode (light mode) -->
     <color name="red_light">#fe4d2e</color> <!-- Danger text (dark mode) -->
     <color name="red_dark">#c30000</color> <!-- Danger text (light mode) -->
+
+    <color name="magnitude_low">#2E7D32</color>
+    <color name="magnitude_moderate">#FB8C00</color>
+    <color name="magnitude_high">#C62828</color>
+    <color name="highlight_chip_background">#E8F5E9</color>
+    <color name="highlight_chip_text">#1B5E20</color>
+    <color name="highlight_chip_stroke">#C8E6C9</color>
+    <color name="info_block_background">#ECEFF1</color>
+    <color name="felt_background">#FFF3E0</color>
+    <color name="felt_text">#8D6E63</color>
+    <color name="nav_surface">#F7FAF9</color>
+    <color name="nav_surface_stroke">#E0EBE7</color>
+    <color name="bottom_nav_active_bg">#E0F2F1</color>
+    <color name="potential_safe_bg">#E0F7FA</color>
+    <color name="potential_safe_text">#006064</color>
+    <color name="potential_warning_bg">#FFEBEE</color>
+    <color name="potential_warning_text">#C62828</color>
+    <color name="potential_unknown_bg">#EDE7F6</color>
+    <color name="potential_unknown_text">#4527A0</color>
+    <color name="nav_item_ripple_tint">#20338574</color>
 </resources>
 

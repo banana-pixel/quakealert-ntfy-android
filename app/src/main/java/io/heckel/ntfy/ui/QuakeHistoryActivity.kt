@@ -182,35 +182,56 @@ class QuakeHistoryActivity : AppCompatActivity() {
     }
 
     private fun parseItem(obj: com.google.gson.JsonObject): QuakeReport? {
-        fun com.google.gson.JsonObject.valueFor(vararg keys: String): String? {
-            for (key in keys) {
-                if (has(key)) {
-                    val element = get(key)
-                    if (element != null && element.isJsonPrimitive) {
-                        val value = element.asString.trim()
-                        if (value.isNotEmpty() && !value.equals("null", ignoreCase = true)) {
-                            return value
-                        }
+        data class FieldValue(val key: String, val value: String)
+
+        fun com.google.gson.JsonObject.valueFor(vararg keys: String): FieldValue? {
+            for (candidate in keys) {
+                val entry = entrySet().firstOrNull { it.key.equals(candidate, ignoreCase = true) } ?: continue
+                val element = entry.value
+                if (element != null && element.isJsonPrimitive) {
+                    val value = element.asString.trim()
+                    if (value.isNotEmpty() && !value.equals("null", ignoreCase = true)) {
+                        return FieldValue(entry.key, value)
                     }
                 }
             }
             return null
         }
 
-        val date = obj.valueFor("tanggal", "date", "day", "tanggal_indo")
-        val time = obj.valueFor("jam", "time", "waktu")
-        val magnitude = obj.valueFor("magnitudo", "magnitude", "mag", "m", "sr")
-        val depth = obj.valueFor("kedalaman", "depth")
-        val potential = obj.valueFor("potensi", "potential", "dirasakan", "felt", "tsunami", "warning")
-        val coordinatesRaw = obj.valueFor("coordinates", "koordinat", "coordinate")
-        val latitude = obj.valueFor("lintang", "latitude", "lat")
-        val longitude = obj.valueFor("bujur", "longitude", "lon", "lng")
+        val consumedKeys = mutableSetOf<String>()
+
+        fun FieldValue.consume(): String {
+            consumedKeys.add(key.lowercase())
+            return value
+        }
+
+        val date = obj.valueFor("tanggal", "date", "day", "tanggal_indo")?.consume()
+        val time = obj.valueFor("jam", "time", "waktu")?.consume()
+        val magnitude = obj.valueFor("magnitudo", "magnitude", "mag", "m", "sr")?.consume()
+        val depth = obj.valueFor("kedalaman", "depth")?.consume()
+        val potential = obj.valueFor("potensi", "potential", "warning", "peringatan", "tsunami")?.consume()
+        val coordinatesRaw = obj.valueFor("coordinates", "koordinat", "coordinate")?.consume()
+        val latitude = obj.valueFor("lintang", "latitude", "lat")?.consume()
+        val longitude = obj.valueFor("bujur", "longitude", "lon", "lng")?.consume()
         val coordinates = when {
             !coordinatesRaw.isNullOrBlank() -> coordinatesRaw
             !latitude.isNullOrBlank() || !longitude.isNullOrBlank() -> listOfNotNull(latitude, longitude).joinToString(", ")
             else -> null
         }
-        val notes = obj.valueFor("keterangan", "note", "ket", "information", "info", "deskripsi", "description", "dampak")
+        val notes = obj.valueFor(
+            "keterangan",
+            "note",
+            "ket",
+            "information",
+            "info",
+            "deskripsi",
+            "description",
+            "dampak",
+            "catatan",
+            "impact"
+        )?.consume()
+        val felt = obj.valueFor("dirasakan", "dirasakan_indo", "felt", "mmi", "skala")?.consume()
+        val shakemapUrl = obj.valueFor("shakemap", "shake_map", "shakemap_url", "shakeMap")?.consume()
         val location = obj.valueFor(
             "wilayah",
             "lokasi",
@@ -221,10 +242,27 @@ class QuakeHistoryActivity : AppCompatActivity() {
             "title",
             "judul",
             "event"
-        ) ?: notes
+        )?.consume() ?: notes
 
-        val hasContent = listOf(date, time, magnitude, depth, location, potential, coordinates, notes)
-            .any { !it.isNullOrBlank() }
+        val extras = mutableListOf<QuakeReportField>()
+        obj.entrySet().forEach { entry ->
+            val element = entry.value
+            if (!element.isJsonPrimitive) {
+                return@forEach
+            }
+            val value = element.asString.trim()
+            if (value.isEmpty() || value.equals("null", ignoreCase = true)) {
+                return@forEach
+            }
+            val normalizedKey = entry.key.lowercase()
+            if (normalizedKey in consumedKeys) {
+                return@forEach
+            }
+            extras.add(QuakeReportField(key = entry.key, value = value))
+        }
+
+        val hasContent = listOf(date, time, magnitude, depth, location, potential, coordinates, notes, felt, shakemapUrl)
+            .any { !it.isNullOrBlank() } || extras.isNotEmpty()
         if (!hasContent) {
             return null
         }
@@ -237,7 +275,10 @@ class QuakeHistoryActivity : AppCompatActivity() {
             location = location,
             potential = potential,
             coordinates = coordinates,
-            notes = notes
+            notes = notes,
+            felt = felt,
+            shakemapUrl = shakemapUrl,
+            extraFields = extras
         )
     }
 
