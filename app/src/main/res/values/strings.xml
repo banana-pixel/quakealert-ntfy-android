@@ -35,6 +35,13 @@
 
     <!-- Main activity: Action bar -->
     <string name="main_action_bar_title">Subscribed topics</string>
+    <string name="main_header_quake_alerts">Subscribed Topics to Quake Alerts</string>
+    <string name="nav_alerts_title">Quake Alerts</string>
+    <string name="nav_history_title">Quake History Reports</string>
+    <string name="history_header_title">Quake History Reports</string>
+    <string name="history_header_description">Stay informed with the latest earthquake activity captured by QuakeAlert.</string>
+    <string name="quake_history_empty">No quake history is available yet.</string>
+    <string name="quake_history_error">Could not load quake history.\n%1$s</string>
     <string name="main_menu_notifications_enabled">Notifications on</string>
     <string name="main_menu_notifications_disabled_forever">Notifications muted</string>
     <string name="main_menu_notifications_disabled_until">Notifications muted until %1$s</string>

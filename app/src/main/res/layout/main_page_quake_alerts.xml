@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/main_header_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:text="@string/main_header_quake_alerts"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.HeadlineSmall"
+        android:textColor="?attr/colorOnBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/main_banner_battery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/main_header_title"
+        app:shapeAppearance="?shapeAppearanceLargeComponent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/main_banner_battery_constraint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="5dp">
+
+            <ImageView
+                android:id="@+id/main_banner_battery_image"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="15dp"
+                app:layout_constraintBottom_toBottomOf="@+id/main_banner_battery_text"
+                app:layout_constraintEnd_toStartOf="@id/main_banner_battery_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/main_banner_battery_text"
+                app:srcCompat="@drawable/ic_battery_alert_red_24dp" />
+
+            <TextView
+                android:id="@+id/main_banner_battery_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="15dp"
+                android:text="@string/main_banner_battery_text"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/main_banner_battery_image"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.helper.widget.Flow
+                android:id="@+id/main_banner_battery_flow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                app:constraint_referenced_ids="main_banner_battery_ask_later,main_banner_battery_dontaskagain,main_banner_battery_fix_now"
+                app:flow_horizontalAlign="end"
+                app:flow_horizontalBias="1"
+                app:flow_horizontalGap="0dp"
+                app:flow_horizontalStyle="packed"
+                app:flow_verticalGap="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/main_banner_battery_text" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/main_banner_battery_ask_later"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/main_banner_battery_button_remind_later" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/main_banner_battery_dontaskagain"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/main_banner_battery_button_dismiss" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/main_banner_battery_fix_now"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/main_banner_battery_button_fix_now" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/main_banner_websocket"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_banner_battery"
+        app:shapeAppearance="?shapeAppearanceLargeComponent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/main_banner_websocket_constraint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="5dp">
+
+            <ImageView
+                android:id="@+id/main_banner_websocket_image"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="15dp"
+                app:layout_constraintBottom_toBottomOf="@+id/main_banner_websocket_text"
+                app:layout_constraintEnd_toStartOf="@id/main_banner_websocket_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/main_banner_websocket_text"
+                app:srcCompat="@drawable/ic_announcement_orange_24dp" />
+
+            <TextView
+                android:id="@+id/main_banner_websocket_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="15dp"
+                android:text="@string/main_banner_websocket_text"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/main_banner_websocket_image"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.helper.widget.Flow
+                android:id="@+id/flow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                app:constraint_referenced_ids="main_banner_websocket_remind_later,main_banner_websocket_dontaskagain,main_banner_websocket_enable"
+                app:flow_horizontalAlign="end"
+                app:flow_horizontalBias="1"
+                app:flow_horizontalGap="0dp"
+                app:flow_horizontalStyle="packed"
+                app:flow_verticalGap="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/main_banner_websocket_text" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/main_banner_websocket_remind_later"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/main_banner_websocket_button_remind_later" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/main_banner_websocket_dontaskagain"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/main_banner_websocket_button_dismiss" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/main_banner_websocket_enable"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/main_banner_websocket_button_enable_now" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/main_banner_websocket_reconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_banner_websocket"
+        app:shapeAppearance="?shapeAppearanceLargeComponent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/main_banner_websocket_reconnect_constraint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="5dp">
+
+            <ImageView
+                android:id="@+id/main_banner_websocket_reconnect_image"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="15dp"
+                app:layout_constraintBottom_toBottomOf="@+id/main_banner_websocket_reconnect_text"
+                app:layout_constraintEnd_toStartOf="@id/main_banner_websocket_reconnect_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/main_banner_websocket_reconnect_text"
+                app:srcCompat="@drawable/ic_announcement_orange_24dp" />
+
+            <TextView
+                android:id="@+id/main_banner_websocket_reconnect_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="15dp"
+                android:text="@string/main_banner_websocket_reconnect_text"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/main_banner_websocket_reconnect_image"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.helper.widget.Flow
+                android:id="@+id/flow_reconnect"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                app:constraint_referenced_ids="main_banner_websocket_reconnect_remind_later,main_banner_websocket_reconnect_dontaskagain,main_banner_websocket_reconnect_enable"
+                app:flow_horizontalAlign="end"
+                app:flow_horizontalBias="1"
+                app:flow_horizontalGap="0dp"
+                app:flow_horizontalStyle="packed"
+                app:flow_verticalGap="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/main_banner_websocket_reconnect_text" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/main_banner_websocket_reconnect_remind_later"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/main_banner_websocket_reconnect_button_remind_later" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/main_banner_websocket_reconnect_dontaskagain"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/main_banner_websocket_reconnect_button_dismiss" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/main_banner_websocket_reconnect_enable"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/main_banner_websocket_reconnect_button_enable_now" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/main_subscriptions_list_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/main_banner_websocket_reconnect">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/main_subscriptions_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:clipToPadding="false"
+            android:focusable="true"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            app:layoutManager="LinearLayoutManager" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <LinearLayout
+        android:id="@+id/main_no_subscriptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="24dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/fab"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/main_header_title">
+
+        <ImageView
+            android:id="@+id/main_no_subscriptions_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_sms_gray_48dp" />
+
+        <TextView
+            android:id="@+id/main_no_subscriptions_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="10dp"
+            android:text="@string/main_no_subscriptions_text"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+        <TextView
+            android:id="@+id/main_how_to_intro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/main_how_to_intro" />
+
+        <TextView
+            android:id="@+id/main_how_to_link"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:autoLink="web"
+            android:linksClickable="true"
+            android:text="@string/main_how_to_link" />
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        style="@style/FloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:contentDescription="@string/main_add_button_description"
+        android:src="@drawable/ic_add_black_24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
