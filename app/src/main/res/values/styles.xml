@@ -53,7 +53,7 @@
         <item name="labelVisibilityMode">labeled</item>
     </style>
 
-    <style name="Widget.Quake.BottomNav.ActiveIndicator" parent="@style/Widget.MaterialComponents.NavigationBar.ActiveIndicator">
+    <style name="Widget.Quake.BottomNav.ActiveIndicator">
         <item name="android:height">36dp</item>
         <item name="android:insetLeft">12dp</item>
         <item name="android:insetRight">12dp</item>
