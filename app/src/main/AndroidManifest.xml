@@ -34,6 +34,16 @@
             </intent-filter>
         </activity>
 
+        <activity
+                android:name=".ui.QuakeHistoryActivity"
+                android:label="@string/quake_history_title"
+                android:parentActivityName=".ui.MainActivity"
+                android:exported="false">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value=".ui.MainActivity"/>
+        </activity>
+
         <!-- Detail activity -->
         <activity
                 android:name=".ui.DetailActivity"
