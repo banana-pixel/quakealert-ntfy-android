@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
                 R.id.menu_alerts -> true
                 R.id.menu_history -> {
                     startActivity(Intent(this, QuakeHistoryActivity::class.java))
-                    overridePendingTransition(0, 0)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
                 else -> false

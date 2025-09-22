@@ -38,5 +38,6 @@
     <color name="potential_unknown_bg">#EDE7F6</color>
     <color name="potential_unknown_text">#4527A0</color>
     <color name="nav_item_ripple_tint">#20338574</color>
+    <color name="sky_blue">#87CEEB</color>
 </resources>
 

@@ -48,7 +48,7 @@
     <style name="Widget.Quake.BottomNavigationView" parent="@style/Widget.MaterialComponents.BottomNavigationView">
         <item name="itemIconTint">@color/nav_item_color</item>
         <item name="itemTextColor">@color/nav_item_color</item>
-        <item name="itemRippleColor">@color/nav_item_ripple</item>
+        <item name="itemRippleColor">@color/sky_blue</item>
         <item name="itemActiveIndicatorStyle">@style/Widget.Quake.BottomNav.ActiveIndicator</item>
         <item name="labelVisibilityMode">labeled</item>
     </style>
