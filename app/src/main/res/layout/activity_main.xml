@@ -220,6 +220,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:visibility="visible"
+            android:alpha="0"
             app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/bottom_navigation_container"
             app:layout_constraintTop_toBottomOf="@id/main_banner_websocket_reconnect">
@@ -252,6 +253,7 @@
                 android:text="@string/main_no_subscriptions_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:alpha="0"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:padding="10dp" android:gravity="center_horizontal"
                 android:paddingStart="50dp" android:paddingEnd="50dp"/>
@@ -282,7 +284,6 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="24dp"
-            android:backgroundTint="@android:color/transparent"
             app:cardBackgroundColor="@color/nav_surface"
             app:cardElevation="8dp"
             app:cardUseCompatPadding="false"
@@ -300,6 +301,7 @@
                 android:background="@android:color/transparent"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
+                app:elevation="0dp"
                 style="@style/Widget.Quake.BottomNavigationView"
                 app:itemHorizontalTranslationEnabled="true"
                 app:menu="@menu/menu_bottom_navigation" />

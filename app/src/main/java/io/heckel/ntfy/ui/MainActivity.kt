@@ -138,6 +138,7 @@ class MainActivity : AppCompatActivity(), ActionMode.Callback, AddFragment.Subsc
                 } else {
                     mainListContainer.visibility = View.VISIBLE
                     noEntries.visibility = View.GONE
+                    mainListContainer.animate().alpha(1f).duration = 250
                 }
 
                 // Add scrub terms to log (in case it gets exported)

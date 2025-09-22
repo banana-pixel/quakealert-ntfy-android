@@ -59,7 +59,6 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="24dp"
-        android:backgroundTint="@android:color/transparent"
         app:cardBackgroundColor="@color/nav_surface"
         app:cardElevation="8dp"
         app:cardUseCompatPadding="false"
@@ -77,6 +76,7 @@
             android:background="@android:color/transparent"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
+            app:elevation="0dp"
             style="@style/Widget.Quake.BottomNavigationView"
             app:itemHorizontalTranslationEnabled="false"
             app:menu="@menu/menu_bottom_navigation" />

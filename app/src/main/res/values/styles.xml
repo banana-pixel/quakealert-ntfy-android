@@ -48,9 +48,12 @@
     <style name="Widget.Quake.BottomNavigationView" parent="@style/Widget.MaterialComponents.BottomNavigationView">
         <item name="itemIconTint">@color/nav_item_color</item>
         <item name="itemTextColor">@color/nav_item_color</item>
-        <item name="itemRippleColor">@color/sky_blue</item>
+        <item name="itemRippleColor">@android:color/transparent</item>
         <item name="itemActiveIndicatorStyle">@style/Widget.Quake.BottomNav.ActiveIndicator</item>
         <item name="labelVisibilityMode">labeled</item>
+
+        <item name="itemPaddingTop">4dp</item>
+        <item name="itemPaddingBottom">8dp</item>
     </style>
 
     <!-- Temporary alias to maintain compatibility with legacy references -->
